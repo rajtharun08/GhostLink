@@ -19,6 +19,7 @@ class LinkCreate(BaseModel):
     long_url: str  
     max_clicks: int = 1
     ttl_hours: int = 24
+    custom_code: str = None
 
     @field_validator('long_url')
     def validate_url(cls, v):
@@ -32,7 +33,7 @@ def health():
 
 @app.post("/shorten")
 def shorten_url(payload: LinkCreate):
-    short_code = generate_short_code()
+    short_code = payload.custom_code if payload.custom_code else generate_short_code()
     
     with get_db() as conn:
         try:
