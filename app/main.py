@@ -33,6 +33,7 @@ def health():
 
 @app.post("/shorten")
 def shorten_url(payload: LinkCreate):
+    print(f"DEBUG: Created ghost link {short_code} for {payload.long_url}")
     with get_db() as conn:
         # Use custom code if provided, otherwise generate one
         short_code = payload.custom_code if payload.custom_code else generate_short_code()
@@ -55,6 +56,7 @@ def shorten_url(payload: LinkCreate):
         
 @app.get("/{short_code}")
 def redirect_to_url(short_code: str):
+    print(f"DEBUG: Redirecting {short_code} to {link['long_url']}")
     with get_db() as conn:
         link = get_link(conn, short_code)
         
