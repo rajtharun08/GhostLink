@@ -1,7 +1,10 @@
 import sqlite3
 from contextlib import contextmanager
+import os
+from dotenv import load_dotenv
 
-DB_FILE = "ghostlink.db"
+load_dotenv()
+DB_FILE = os.getenv("DATABASE_URL", "ghostlink.db")
 
 @contextmanager
 def get_db():
@@ -19,4 +22,4 @@ def init_db():
         with open("app/schema.sql", "r") as f:
             conn.executescript(f.read())
         conn.commit()
-    print("GhostLink database is ready.")
+    print("GhostLink database ({DB_FILE}) is ready.")
