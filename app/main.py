@@ -9,6 +9,10 @@ from datetime import datetime
 from fastapi.responses import RedirectResponse,HTMLResponse
 from pydantic import field_validator
 from app.templates import GHOST_PAGE
+import os
+
+
+BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 
 #initialize db
 init_db()
@@ -50,7 +54,7 @@ def shorten_url(payload: LinkCreate):
                 payload.ttl_hours, 
                 short_code
             )
-            return {"short_url": f"http://localhost:8000/{short_code}", "short_code": short_code}
+            return {"short_url": f"{BASE_URL}/{short_code}", "short_code": short_code}
         except Exception:
             raise HTTPException(status_code=500, detail="Could not create link.")
         
