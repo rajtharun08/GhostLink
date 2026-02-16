@@ -15,13 +15,13 @@ import os
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 
 BANNER = """
-  ____ _                      _     _       _      
- / ___| |__   ___  ___  ___| |   (_)_ __ | | __ 
-| |  _| '_ \ / _ \/ __|/ _ \ |   | | '_ \| |/ / 
-| |_| | | | | (_) \__ \  __/ |___| | | | |   <  
- \____|_| |_|\___/|___/\___|_____|_|_| |_|_|\_\\
+  ____ _               _   _     _       _      
+ / ___| |__   ___  ___| |_| |   (_)_ __ | | __ 
+| |  _| '_ \ / _ \/ __| __| |   | | '_ \| |/ / 
+| |_| | | | | (_) \__ \ |_| |___| | | | |   <  
+ \____|_| |_|\___/|___/\__\_____|_|_| |_|_|\_\\
       -- Self-Destructing URL Shortener --
-""" 
+"""
 #initialize db
 init_db()
 print(BANNER)
@@ -61,11 +61,12 @@ def home():
 
 @app.post("/shorten")
 def shorten_url(payload: LinkCreate):
-    print(f"DEBUG: Created ghost link {short_code} for {payload.long_url}")
+   
     with get_db() as conn:
         # Use custom code if provided, otherwise generate one
         short_code = payload.custom_code if payload.custom_code else generate_short_code()
         
+        print(f"DEBUG: Created ghost link {short_code} for {payload.long_url}")
         # Check if code already exists
         if get_link(conn, short_code):
             raise HTTPException(status_code=400, detail="Short code already in use.")
@@ -84,13 +85,14 @@ def shorten_url(payload: LinkCreate):
         
 @app.get("/{short_code}")
 def redirect_to_url(short_code: str):
-    print(f"DEBUG: Redirecting {short_code} to {link['long_url']}")
+    
     with get_db() as conn:
         link = get_link(conn, short_code)
         
+        
         if not link:
             return HTMLResponse(content=GHOST_PAGE, status_code=404)
-        
+        print(f"DEBUG: Redirecting {short_code} to {link['long_url']}")
         # Check Expiration
         # SQLite timestamps are strings; we convert to datetime for comparison
         expires_at = datetime.strptime(link['expires_at'], '%Y-%m-%d %H:%M:%S.%f')
