@@ -141,6 +141,22 @@ def force_expire(short_code: str):
     print(f"DEBUG: Manually expired {short_code}")
     return {"message": f"Link {short_code} has been ghosted."}
 
+@app.patch("/revive/{short_code}")
+def extend_link(short_code: str, hours: int = 24):
+    with get_db() as conn:
+        link = get_link(conn, short_code)
+        if not link:
+            raise HTTPException(status_code=404, detail="Link not found.")
+        
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE links SET expires_at = datetime(expires_at, '+' || ? || ' hours') WHERE short_code = ?",
+            (hours, short_code)
+        )
+        conn.commit()
+        
+    return {"message": f"Link {short_code} extended by {hours} hours."}
+
 @app.delete("/{short_code}")
 def manual_delete(short_code: str):
     """Allows manual destruction of a ghost link."""
