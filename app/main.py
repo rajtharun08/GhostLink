@@ -33,21 +33,26 @@ def health():
 
 @app.post("/shorten")
 def shorten_url(payload: LinkCreate):
-    short_code = payload.custom_code if payload.custom_code else generate_short_code()
-    
     with get_db() as conn:
+        # Use custom code if provided, otherwise generate one
+        short_code = payload.custom_code if payload.custom_code else generate_short_code()
+        
+        # Check if code already exists
+        if get_link(conn, short_code):
+            raise HTTPException(status_code=400, detail="Short code already in use.")
+            
         try:
             create_link(
                 conn, 
-                str(payload.long_url), 
+                payload.long_url, 
                 payload.max_clicks, 
                 payload.ttl_hours, 
                 short_code
             )
             return {"short_url": f"http://localhost:8000/{short_code}", "short_code": short_code}
-        except Exception as e:
+        except Exception:
             raise HTTPException(status_code=500, detail="Could not create link.")
-
+        
 @app.get("/{short_code}")
 def redirect_to_url(short_code: str):
     with get_db() as conn:
