@@ -13,11 +13,19 @@ init_db()
 
 app=FastAPI(title="GhostLink")
 
+from pydantic import field_validator
+
 class LinkCreate(BaseModel):
-    long_url: HttpUrl
+    long_url: str  
     max_clicks: int = 1
     ttl_hours: int = 24
 
+    @field_validator('long_url')
+    def validate_url(cls, v):
+        if not v.startswith(('http://', 'https://')):
+            raise ValueError('URL must start with http:// or https://')
+        return v
+    
 @app.get("/")
 def health():
     return {"status": "haunting"}
