@@ -34,9 +34,21 @@ class LinkCreate(BaseModel):
             raise ValueError("Cannot shorten a GhostLink URL.")
         return v
     
-@app.get("/")
-def health():
-    return {"status": "haunting"}
+@app.get("/", response_class=HTMLResponse)
+def home():
+    return """
+    <html>
+        <head><title>GhostLink</title></head>
+        <body style="font-family: sans-serif; background: #121212; color: #eee; padding: 50px;">
+            <h1>GhostLink API</h1>
+            <p>The self-destructing URL shortener is active.</p>
+            <ul>
+                <li>Use <b>POST /shorten</b> to create links.</li>
+                <li>Visit <b>/stats/{code}</b> to check link health.</li>
+            </ul>
+        </body>
+    </html>
+    """
 
 @app.post("/shorten")
 def shorten_url(payload: LinkCreate):
