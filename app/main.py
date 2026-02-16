@@ -14,8 +14,17 @@ import os
 
 BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
 
+BANNER = """
+  ____ _                      _     _       _      
+ / ___| |__   ___  ___  ___| |   (_)_ __ | | __ 
+| |  _| '_ \ / _ \/ __|/ _ \ |   | | '_ \| |/ / 
+| |_| | | | | (_) \__ \  __/ |___| | | | |   <  
+ \____|_| |_|\___/|___/\___|_____|_|_| |_|_|\_\\
+      -- Self-Destructing URL Shortener --
+""" 
 #initialize db
 init_db()
+print(BANNER)
 
 app=FastAPI(title="GhostLink")
 
