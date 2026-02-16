@@ -12,3 +12,11 @@ def get_db():
         yield conn
     finally:
         conn.close()
+
+def init_db():
+    """Manually creates the tables using the schema.sql file."""
+    with get_db() as conn:
+        with open("app/schema.sql", "r") as f:
+            conn.executescript(f.read())
+        conn.commit()
+    print("GhostLink database is ready.")
