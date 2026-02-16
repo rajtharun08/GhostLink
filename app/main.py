@@ -6,14 +6,24 @@ from app.crud import create_link,delete_link,increment_clicks,get_link,purge_exp
 from app.database import get_db
 from pydantic import BaseModel, HttpUrl
 from datetime import datetime
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse,HTMLResponse
+from pydantic import field_validator
 
 #initialize db
 init_db()
 
 app=FastAPI(title="GhostLink")
 
-from pydantic import field_validator
+GHOST_PAGE = """
+<html>
+    <head><title>Ghosted!</title></head>
+    <body style="background: #121212; color: #fff; text-align: center; font-family: sans-serif; padding-top: 100px;">
+        <h1>Link has vanished!</h1>
+        <p>This URL has either expired or reached its click limit and returned to the afterlife.</p>
+        <a href="/" style="color: #bb86fc;">Create your own GhostLink</a>
+    </body>
+</html>
+"""
 
 class LinkCreate(BaseModel):
     long_url: str  
@@ -61,7 +71,7 @@ def redirect_to_url(short_code: str):
         link = get_link(conn, short_code)
         
         if not link:
-            raise HTTPException(status_code=404, detail="Link has vanished.")
+            return HTMLResponse(content=GHOST_PAGE, status_code=404)
         
         # Check Expiration
         # SQLite timestamps are strings; we convert to datetime for comparison
