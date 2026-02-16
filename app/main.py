@@ -63,3 +63,18 @@ def redirect_to_url(short_code: str):
             increment_clicks(conn, short_code)
             
         return RedirectResponse(url=link['long_url'])
+    
+@app.get("/stats/{short_code}")
+def get_link_stats(short_code: str):
+    with get_db() as conn:
+        link = get_link(conn, short_code)
+        
+        if not link:
+            raise HTTPException(status_code=404, detail="Link not found.")
+            
+        return {
+            "short_code": link["short_code"],
+            "long_url": link["long_url"],
+            "clicks_remaining": link["max_clicks"] - link["current_clicks"],
+            "expires_at": link["expires_at"]
+        }
