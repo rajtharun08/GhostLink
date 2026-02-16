@@ -8,22 +8,12 @@ from pydantic import BaseModel, HttpUrl
 from datetime import datetime
 from fastapi.responses import RedirectResponse,HTMLResponse
 from pydantic import field_validator
+from app.templates import GHOST_PAGE
 
 #initialize db
 init_db()
 
 app=FastAPI(title="GhostLink")
-
-GHOST_PAGE = """
-<html>
-    <head><title>Ghosted!</title></head>
-    <body style="background: #121212; color: #fff; text-align: center; font-family: sans-serif; padding-top: 100px;">
-        <h1>Link has vanished!</h1>
-        <p>This URL has either expired or reached its click limit and returned to the afterlife.</p>
-        <a href="/" style="color: #bb86fc;">Create your own GhostLink</a>
-    </body>
-</html>
-"""
 
 class LinkCreate(BaseModel):
     long_url: str  
