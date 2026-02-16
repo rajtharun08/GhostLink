@@ -126,6 +126,21 @@ def get_dashboard():
         links = get_all_active_links(conn)
         return [dict(link) for link in links]
     
+@app.post("/ghost/{short_code}")
+def force_expire(short_code: str):
+    with get_db() as conn:
+        cursor = conn.cursor()
+        cursor.execute(
+            "UPDATE links SET expires_at = CURRENT_TIMESTAMP WHERE short_code = ?",
+            (short_code,)
+        )
+        conn.commit()
+        if cursor.rowcount == 0:
+            raise HTTPException(status_code=404, detail="Link not found.")
+            
+    print(f"DEBUG: Manually expired {short_code}")
+    return {"message": f"Link {short_code} has been ghosted."}
+
 @app.delete("/{short_code}")
 def manual_delete(short_code: str):
     """Allows manual destruction of a ghost link."""
