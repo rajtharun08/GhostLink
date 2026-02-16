@@ -42,3 +42,9 @@ def purge_expired_links(conn):
     count = cursor.rowcount
     conn.commit()
     return count
+
+def get_all_active_links(conn):
+    """Fetches all links that have not yet expired."""
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM links WHERE expires_at > CURRENT_TIMESTAMP")
+    return cursor.fetchall()

@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from app.database import init_db
 from fastapi import Depends, HTTPException
 from app.utils import generate_short_code
-from app.crud import create_link,delete_link,increment_clicks,get_link,purge_expired_links
+from app.crud import create_link,delete_link,increment_clicks,get_link,purge_expired_links,get_all_active_links
 from app.database import get_db
 from pydantic import BaseModel, HttpUrl
 from datetime import datetime
@@ -104,3 +104,9 @@ def cleanup_expired():
     with get_db() as conn:
         deleted_count = purge_expired_links(conn)
     return {"message": f"Ghosted {deleted_count} expired links."}
+
+@app.get("/debug/all")
+def get_dashboard():
+    with get_db() as conn:
+        links = get_all_active_links(conn)
+        return [dict(link) for link in links]
