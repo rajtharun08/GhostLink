@@ -125,3 +125,16 @@ def get_dashboard():
     with get_db() as conn:
         links = get_all_active_links(conn)
         return [dict(link) for link in links]
+    
+@app.delete("/{short_code}")
+def manual_delete(short_code: str):
+    """Allows manual destruction of a ghost link."""
+    with get_db() as conn:
+        link = get_link(conn, short_code)
+        if not link:
+            raise HTTPException(status_code=404, detail="Link not found.")
+        
+        delete_link(conn, short_code)
+        print(f"DEBUG: Manually ghosted {short_code}")
+        
+    return {"message": f"Link {short_code} has been returned to the void."}
