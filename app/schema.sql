@@ -7,3 +7,4 @@ CREATE TABLE IF NOT EXISTS links (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     expires_at TIMESTAMP NOT NULL
 );
+CREATE INDEX IF NOT EXISTS idx_short_code ON links(short_code);
