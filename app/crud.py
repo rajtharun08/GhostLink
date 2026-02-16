@@ -13,3 +13,9 @@ def create_link(conn, long_url, max_clicks, ttl_hours, short_code):
     )
     conn.commit()
     return short_code
+
+def get_link(conn, short_code):
+    """Fetches a link record by its short code."""
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM links WHERE short_code = ?", (short_code,))
+    return cursor.fetchone()
