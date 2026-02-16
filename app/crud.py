@@ -34,3 +34,11 @@ def delete_link(conn, short_code):
     cursor = conn.cursor()
     cursor.execute("DELETE FROM links WHERE short_code = ?", (short_code,))
     conn.commit()
+
+def purge_expired_links(conn):
+    """Deletes all links where the expiration time has passed."""
+    cursor = conn.cursor()
+    cursor.execute("DELETE FROM links WHERE expires_at < CURRENT_TIMESTAMP")
+    count = cursor.rowcount
+    conn.commit()
+    return count
