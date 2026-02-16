@@ -29,6 +29,9 @@ class LinkCreate(BaseModel):
     def validate_url(cls, v):
         if not v.startswith(('http://', 'https://')):
             raise ValueError('URL must start with http:// or https://')
+        base = os.getenv("BASE_URL", "localhost")
+        if base in v:
+            raise ValueError("Cannot shorten a GhostLink URL.")
         return v
     
 @app.get("/")
