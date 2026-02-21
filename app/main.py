@@ -33,7 +33,17 @@ class LinkCreate(BaseModel):
     max_clicks: int = 1
     ttl_hours: int = 24
     custom_code: str = None
-
+    @field_validator('max_clicks')
+    def limit_clicks(cls, v):
+        if v > 500: # max click limit
+            raise ValueError('Maximum clicks allowed is 500.')
+        return v
+    @field_validator('ttl_hours')
+    def limit_ttl(cls, v):
+        if v > 168: # (1 week)
+            raise ValueError('Maximum TTL is 168 hours (7 days).')
+        return v
+    
     @field_validator('long_url')
     def validate_url(cls, v):
         if not v.startswith(('http://', 'https://')):
