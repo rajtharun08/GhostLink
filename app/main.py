@@ -1,4 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI,Request
+from fastapi.staticfiles import StaticFiles
+from jinja2 import Template
+from fastapi.templating import Jinja2Templates
+from fastapi.responses import HTMLResponse
 from app.database import init_db
 from fastapi import Depends, HTTPException,BackgroundTasks
 from app.utils import generate_short_code
@@ -53,21 +57,14 @@ class LinkCreate(BaseModel):
             raise ValueError("Cannot shorten a GhostLink URL.")
         return v
     
+app.mount("/static", StaticFiles(directory="app/static"), name="static")
+
+templates = Jinja2Templates(directory="app/templates")
+
 @app.get("/", response_class=HTMLResponse)
-def home():
-    return """
-    <html>
-        <head><title>GhostLink</title></head>
-        <body style="font-family: sans-serif; background: #121212; color: #eee; padding: 50px;">
-            <h1>GhostLink API</h1>
-            <p>The self-destructing URL shortener is active.</p>
-            <ul>
-                <li>Use <b>POST /shorten</b> to create links.</li>
-                <li>Visit <b>/stats/{code}</b> to check link health.</li>
-            </ul>
-        </body>
-    </html>
-    """
+async def home(request: Request):
+    return templates.TemplateResponse("home.html", {"request": request})
+
 
 @app.post("/shorten")
 def shorten_url(payload: LinkCreate):
