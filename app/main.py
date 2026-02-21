@@ -12,7 +12,6 @@ from pydantic import BaseModel, HttpUrl
 from datetime import datetime
 from fastapi.responses import RedirectResponse,HTMLResponse
 from pydantic import field_validator
-from app.templates import GHOST_PAGE
 import os
 
 
@@ -91,14 +90,14 @@ def shorten_url(payload: LinkCreate):
             raise HTTPException(status_code=500, detail="Could not create link.")
         
 @app.get("/{short_code}")
-def redirect_to_url(short_code: str,background_tasks: BackgroundTasks):
+def redirect_to_url(short_code: str,request: Request,background_tasks: BackgroundTasks):
     
     with get_db() as conn:
         link = get_link(conn, short_code)
         
         
         if not link:
-            return HTMLResponse(content=GHOST_PAGE, status_code=404)
+            return templates.TemplateResponse("ghosted.html", {"request": request})
         print(f"DEBUG: Redirecting {short_code} to {link['long_url']}")
 
         background_tasks.add_task(purge_expired_links, conn)
