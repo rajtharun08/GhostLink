@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from app.database import init_db
-from fastapi import Depends, HTTPException
+from fastapi import Depends, HTTPException,BackgroundTasks
 from app.utils import generate_short_code
 from app.crud import create_link,delete_link,increment_clicks,get_link,purge_expired_links,get_all_active_links
 from app.database import get_db
@@ -63,11 +63,11 @@ def home():
 def shorten_url(payload: LinkCreate):
    
     with get_db() as conn:
-        # Use custom code if provided, otherwise generate one
+        
         short_code = payload.custom_code if payload.custom_code else generate_short_code()
         
         print(f"DEBUG: Created ghost link {short_code} for {payload.long_url}")
-        # Check if code already exists
+        
         if get_link(conn, short_code):
             raise HTTPException(status_code=400, detail="Short code already in use.")
             
@@ -84,7 +84,7 @@ def shorten_url(payload: LinkCreate):
             raise HTTPException(status_code=500, detail="Could not create link.")
         
 @app.get("/{short_code}")
-def redirect_to_url(short_code: str):
+def redirect_to_url(short_code: str,background_tasks: BackgroundTasks):
     
     with get_db() as conn:
         link = get_link(conn, short_code)
@@ -93,14 +93,14 @@ def redirect_to_url(short_code: str):
         if not link:
             return HTMLResponse(content=GHOST_PAGE, status_code=404)
         print(f"DEBUG: Redirecting {short_code} to {link['long_url']}")
-        # Check Expiration
-        # SQLite timestamps are strings; we convert to datetime for comparison
+
+        background_tasks.add_task(purge_expired_links, conn)
+
         expires_at = datetime.strptime(link['expires_at'], '%Y-%m-%d %H:%M:%S.%f')
         if datetime.now() > expires_at:
             delete_link(conn, short_code)
             raise HTTPException(status_code=404, detail="Link has vanished.")
         
-        # Logic: Increment and check click limit
         new_clicks = link['current_clicks'] + 1
         
         if new_clicks >= link['max_clicks']:
